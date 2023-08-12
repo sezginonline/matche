@@ -1,0 +1,18 @@
+<header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
+    <div class="mb-2 mb-md-0">
+        <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
+            <img src="/assets/img/logo32.svg" style="border-radius: 0.375rem; width: 32px; height: 32px; margin-right: 10px; background-color: white;" alt="Match·E">
+            <span class="fs-4 navbar-brand">Match·E</span>
+        </a>
+    </div>
+
+    <div class="dropdown text-end ms-2">
+        <a href="" class="d-block text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            {{ t.label }}
+        </a>
+        <ul class="dropdown-menu text-small">
+            <li><a class="dropdown-item" href="/en/" onclick="localStorage.setItem('language', 'en'); window.location.href = '/en/' + window.location.pathname.slice(4) + window.location.search; return false;">English</a></li>
+            <li><a class="dropdown-item" href="/tr/" onclick="localStorage.setItem('language', 'tr'); window.location.href = '/tr/' + window.location.pathname.slice(4) + window.location.search; return false;">Türkçe</a></li>
+        </ul>
+    </div>
+</header>

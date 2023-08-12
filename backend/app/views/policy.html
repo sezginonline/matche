@@ -1,0 +1,17 @@
+{% extends "layouts/guest.html" %}
+
+{% block content %}
+
+{% include 'includes/color-modes.html' %}
+
+<main class="container">
+
+    {% include 'includes/header.html' %}
+
+    {% include 'languages/' + t.code + '/' + policy + '.html' %}
+
+    {% include 'includes/footer.html' %}
+
+</main>
+
+{% endblock %}

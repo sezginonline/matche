@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="{{ t.code }}" data-bs-theme="auto">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="{{ t.title }}">
+  <meta name="keywords" content="{{ t.title }}">
+  <meta name="author" content="{{ t.title }}">
+  <title>{{ t.title }}</title>
+  <base href="/{{ t.code }}/" />
+  <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/assets/css/sweetalert2.min.css" rel="stylesheet">
+  <link href="/assets/css/cookieconsent.min.css" rel="stylesheet">
+  <link href="/assets/css/main.css" rel="stylesheet">
+  <script type="text/javascript">
+    language = localStorage.getItem("language") ?? "{{ t.code }}";
+    document.getElementsByTagName("base")[0].href = "/" + language + "/";
+  </script>
+</head>
+<body>
+  {% block content %}{% endblock %}
+  <script src="/assets/js/bootstrap.bundle.min.js"></script>
+	<script src="/assets/js/sweetalert2.all.min.js"></script>
+	<script src="/assets/js/main.js?v=1.0.0"></script>
+	<script src="/assets/js/cookieconsent.min.js"></script>
+</body>
+</html>

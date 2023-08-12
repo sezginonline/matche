@@ -1,0 +1,249 @@
+{% extends "layouts/guest.html" %}
+
+{% block content %}
+
+{% include 'includes/color-modes.html' %}
+
+<script>
+    if (window.location.pathname == "/" && language != "en") {
+        window.location.href = "/" + language + "/";
+    }
+</script>
+
+<script>
+    var onloadCallback = function() {
+        grecaptcha.render('RecaptchaField1', {
+            'sitekey': '{{ captcha_site_key }}',
+            'theme': 'light',
+        });
+        grecaptcha.render('RecaptchaField2', {
+            'sitekey': '{{ captcha_site_key }}',
+            'theme': 'light',
+        });
+    };
+
+    function loginOrRegister(endpoint) {
+        fetch('/api/v1/auth/' + endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Language': '{{ t.code }}'
+            },
+            credentials: 'include',
+            body: JSON.stringify(Object.fromEntries(new FormData(document.getElementById(endpoint + 'Form'))))
+        })
+        .then((r) => {return new Promise((resolve) => r.json().then((json) => resolve({ ok: r.ok, json})));})
+        .then(({ ok, json }) => {
+            if (ok) {
+                window.location.href = '/spa';
+            } else {
+                grecaptcha.reset(0);
+                grecaptcha.reset(1);
+                Swal.fire({
+                    title: '{{ t.main.error }}',
+                    text: json.message,
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+    }
+
+    function handleCredentialResponse(response) {
+        fetch('/api/v1/auth/google', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            credentials: 'include',
+            body: JSON.stringify({"credential": response.credential})
+        })
+        .then((r) => {return new Promise((resolve) => r.json().then((json) => resolve({ ok: r.ok, json})));})
+        .then(({ ok, json }) => {
+            if (ok) {
+                window.location.href = '/spa';
+            } else {
+                Swal.fire({
+                    title: '{{ t.main.error }}',
+                    text: json.message,
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+    }
+</script>
+<script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit&hl={{ t.code }}" async defer></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<div id="g_id_onload"
+    data-client_id="{{ google_client_id }}"
+    data-context="signin"
+    data-ux_mode="popup"
+    data-callback="handleCredentialResponse"
+    data-auto_select="true"
+    data-itp_support="true">
+</div>
+
+<main class="container">
+
+    {% include 'includes/header.html' %}
+
+    <div class="row g-lg-5 py-1 align-items-center">
+        <div class="col-lg-7 text-center text-lg-start">
+            <h1 class="display-4 fw-bold lh-1 text-body-emphasis mb-3">{{ t.home.title }}</h1>
+            <p class="col-lg-10 fs-4">{{ t.home.description }}</p>
+            <p class="col-lg-10 fs-4">{{ t.home.online.format(online) }}</p>
+            <p class="mt-5">
+                <img src="/assets/img/appstore.png" class="me-3">
+                <img src="/assets/img/googleplay.png">
+            </p>
+            <br><br>
+        </div>
+        <div class="col-md-10 mx-auto col-lg-5">
+            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane"
+                        type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true">{{ t.home.sign_in }}</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane"
+                        type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">{{ t.home.sign_up }}</button>
+                </li>
+            </ul>
+            <div class="tab-content" id="myTabContent">
+                <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab"
+                    tabindex="0">
+                    <form class="p-4 p-md-5 border border-top-0 bg-body-tertiary" id="loginForm" onsubmit="loginOrRegister('login'); return false;">
+                        <div class="form-floating mb-3">
+                            <input type="email" class="form-control" name="email" id="email" placeholder="{{ t.home.email }}">
+                            <label for="email">{{ t.home.email }}</label>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input type="password" class="form-control" name="password" id="password" placeholder="{{ t.home.password }}">
+                            <label for="password">{{ t.home.password }}</label>
+                        </div>
+                        <div class="checkbox mb-3">
+                            <label>
+                                <input type="checkbox" name="remember"> {{ t.home.remember }}
+                            </label>
+                        </div>
+
+                        <div id="RecaptchaField1"></div>
+
+                        <br>
+
+                        <button class="w-100 btn btn-lg btn-warning" type="submit">{{ t.home.sign_in }}</button>
+
+                        <hr>
+
+                        <div class="g_id_signin"
+                            data-type="standard"
+                            data-shape="rectangular"
+                            data-theme="outline"
+                            data-text="signin_with"
+                            data-size="large"
+                            data-logo_alignment="left">
+                        </div>
+                    </form>
+
+                </div>
+                <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab"
+                    tabindex="0">
+                    <form class="p-4 p-md-5 border border-top-0 bg-body-tertiary" id="registerForm" onsubmit="loginOrRegister('register'); return false;">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="name" name="name" placeholder="{{ t.home.name }}">
+                            <label for="name">{{ t.home.name }}</label>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input type="email" class="form-control" id="email2" name="email" placeholder="{{ t.home.email }}">
+                            <label for="email2">{{ t.home.email }}</label>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input type="password" class="form-control" id="password2" name="password" placeholder="{{ t.home.password }}">
+                            <label for="password2">{{ t.home.password }}</label>
+                        </div>
+
+                        <div id="RecaptchaField2"></div>
+
+                        <br>
+
+                        <button class="w-100 btn btn-lg btn-warning" type="submit">{{ t.home.sign_up }}</button>
+
+                        <br>
+                        
+                        <small class="text-body-secondary">{{ t.home.agreement }}</small>
+
+                        <hr>
+
+                        <div class="g_id_signin"
+                            data-type="standard"
+                            data-shape="rectangular"
+                            data-theme="outline"
+                            data-text="signup_with"
+                            data-size="large"
+                            data-logo_alignment="left">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 py-4 row-cols-1 row-cols-lg-3">
+
+        <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+            <symbol id="cpu-fill" viewBox="0 0 16 16">
+                <path d="M6.5 6a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z" />
+                <path
+                    d="M5.5.5a.5.5 0 0 0-1 0V2A2.5 2.5 0 0 0 2 4.5H.5a.5.5 0 0 0 0 1H2v1H.5a.5.5 0 0 0 0 1H2v1H.5a.5.5 0 0 0 0 1H2v1H.5a.5.5 0 0 0 0 1H2A2.5 2.5 0 0 0 4.5 14v1.5a.5.5 0 0 0 1 0V14h1v1.5a.5.5 0 0 0 1 0V14h1v1.5a.5.5 0 0 0 1 0V14h1v1.5a.5.5 0 0 0 1 0V14a2.5 2.5 0 0 0 2.5-2.5h1.5a.5.5 0 0 0 0-1H14v-1h1.5a.5.5 0 0 0 0-1H14v-1h1.5a.5.5 0 0 0 0-1H14v-1h1.5a.5.5 0 0 0 0-1H14A2.5 2.5 0 0 0 11.5 2V.5a.5.5 0 0 0-1 0V2h-1V.5a.5.5 0 0 0-1 0V2h-1V.5a.5.5 0 0 0-1 0V2h-1V.5zm1 4.5h3A1.5 1.5 0 0 1 11 6.5v3A1.5 1.5 0 0 1 9.5 11h-3A1.5 1.5 0 0 1 5 9.5v-3A1.5 1.5 0 0 1 6.5 5z" />
+            </symbol>
+            <symbol id="people-circle" viewBox="0 0 16 16">
+                <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
+                <path fill-rule="evenodd"
+                    d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z" />
+            </symbol>
+            <symbol id="collection" viewBox="0 0 16 16">
+                <path
+                    d="M2.5 3.5a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-11zm2-2a.5.5 0 0 1 0-1h7a.5.5 0 0 1 0 1h-7zM0 13a1.5 1.5 0 0 0 1.5 1.5h13A1.5 1.5 0 0 0 16 13V6a1.5 1.5 0 0 0-1.5-1.5h-13A1.5 1.5 0 0 0 0 6v7zm1.5.5A.5.5 0 0 1 1 13V6a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5h-13z" />
+            </symbol>
+        </svg>
+
+        <div class="feature col">
+            <div
+                class="feature-icon d-inline-flex align-items-center justify-content-center text-bg-danger bg-gradient fs-2 mb-3">
+                <svg class="bi" width="1em" height="1em">
+                    <use xlink:href="#cpu-fill" />
+                </svg>
+            </div>
+            <h3 class="fs-2">{{ t.home.t1 }}</h3>
+            <p>{{ t.home.d1 }}</p>
+        </div>
+        <div class="feature col">
+            <div
+                class="feature-icon d-inline-flex align-items-center justify-content-center text-bg-danger bg-gradient fs-2 mb-3">
+                <svg class="bi" width="1em" height="1em">
+                    <use xlink:href="#people-circle" />
+                </svg>
+            </div>
+            <h3 class="fs-2">{{ t.home.t2 }}</h3>
+            <p>{{ t.home.d2 }}</p>
+        </div>
+        <div class="feature col">
+            <div
+                class="feature-icon d-inline-flex align-items-center justify-content-center text-bg-danger bg-gradient fs-2 mb-3">
+                <svg class="bi" width="1em" height="1em">
+                    <use xlink:href="#collection" />
+                </svg>
+            </div>
+            <h3 class="fs-2">{{ t.home.t3 }}</h3>
+            <p>{{ t.home.d3 }}</p>
+        </div>
+    </div>
+
+    {% include 'includes/footer.html' %}
+
+</main>
+
+{% endblock %}
